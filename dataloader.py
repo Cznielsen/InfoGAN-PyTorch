@@ -1,11 +1,12 @@
 import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as dsets
+from quickDrawDataset import QuickDrawDataset
 
 # Directory containing the data.
 root = 'data/'
 
-def get_data(dataset, batch_size):
+def get_data(dataset, batch_size, classes=None):
 
     # Get MNIST dataset.
     if dataset == 'MNIST':
@@ -48,6 +49,10 @@ def get_data(dataset, batch_size):
                 (0.5, 0.5, 0.5))])
 
         dataset = dsets.ImageFolder(root=root+'celeba/', transform=transform)
+
+
+    elif dataset == "QuickDraw":
+        dataset = QuickDrawDataset(classes, download=True)
 
     # Create dataloader.
     dataloader = torch.utils.data.DataLoader(dataset, 
