@@ -18,7 +18,7 @@ class QuickDrawDataset(Dataset):
 
         data = data.reshape((data.shape[0], 28, 28))
 
-        self.data = torch.from_numpy(data).byte()
+        self.data = torch.from_numpy(data)
 
     def __len__(self):
         return self.data.shape[0]

@@ -74,7 +74,7 @@ sample_batch = next(iter(dataloader))
 plt.figure(figsize=(10, 10))
 plt.axis("off")
 plt.imshow(np.transpose(vutils.make_grid(
-    sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).cpu(), (1, 2, 0)))
+    sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).byte().cpu(), (1, 2, 0)))
 plt.savefig('Training Images {}'.format(params['dataset']))
 plt.close('all')
 
