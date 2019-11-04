@@ -21,7 +21,7 @@ class QuickDrawDataset(Dataset):
         self.data = torch.from_numpy(data)
 
     def __len__(self):
-        return len(self.data.shape[0])
+        return self.data.shape[0]
 
     def __getitem__(self, idx):
         return self.data[idx]
