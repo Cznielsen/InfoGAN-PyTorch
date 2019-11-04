@@ -64,7 +64,7 @@ elif(params['dataset'] == 'FashionMNIST'):
     params['num_con_c'] = 2
 # Input parametre til vores. Vi skal lege med disse på et tidspunkt
 elif(params['dataset'] == 'QuickDraw'):
-    params['num_z'] = 62
+    params['num_z'] = 69
     params['num_dis_c'] = 1
     params['dis_c_dim'] = 3 #Denne værdi skal ændres til antallet af klasser vi skal skelne i mellem. Passér fra config
     params['num_con_c'] = 2 #Hyperparameter. Beskriver antallet af kontiuerte værdier vi kan lege med. Burde passeres fra konfig i stedet.
@@ -74,7 +74,7 @@ sample_batch = next(iter(dataloader))
 plt.figure(figsize=(10, 10))
 plt.axis("off")
 plt.imshow(np.transpose(vutils.make_grid(
-    sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).byte().cpu(), (1, 2, 0)))
+    sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).cpu(), (1, 2, 0)))
 plt.savefig('Training Images {}'.format(params['dataset']))
 plt.close('all')
 
@@ -107,20 +107,20 @@ optimD = optim.Adam([{'params': discriminator.parameters()}, {'params': netD.par
 optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()}], lr=params['learning_rate'], betas=(params['beta1'], params['beta2']))
 
 # Fixed Noise
-z = torch.randn(100, params['num_z'], 1, 1, device=device)
+z = torch.randn(30, params['num_z'], 1, 1, device=device)
 fixed_noise = z
 if(params['num_dis_c'] != 0):
     idx = np.arange(params['dis_c_dim']).repeat(10)
-    dis_c = torch.zeros(100, params['num_dis_c'], params['dis_c_dim'], device=device)
+    dis_c = torch.zeros(30, params['num_dis_c'], params['dis_c_dim'], device=device)
     for i in range(params['num_dis_c']):
-        dis_c[torch.arange(0, 100), i, idx] = 1.0
+        dis_c[torch.arange(0, 30), i, idx] = 1.0
 
-    dis_c = dis_c.view(100, -1, 1, 1)
+    dis_c = dis_c.view(30, -1, 1, 1)
 
     fixed_noise = torch.cat((fixed_noise, dis_c), dim=1)
 
 if(params['num_con_c'] != 0):
-    con_c = torch.rand(100, params['num_con_c'], 1, 1, device=device) * 2 - 1
+    con_c = torch.rand(30, params['num_con_c'], 1, 1, device=device) * 2 - 1
     fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
 
 real_label = 1
