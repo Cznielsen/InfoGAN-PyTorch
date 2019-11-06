@@ -8,24 +8,20 @@ import torch
 
 class QuickDrawDataset(Dataset):
     def __init__(self, classes, download=False):
-
         if download:
             self.download(classes)
 
-        data = np.load("data/" + classes[0] + ".npy", mmap_mode='r')
-        for i in range(1, len(classes)):
-            data = np.append(data, np.load("data/" + classes[i] + ".npy", mmap_mode='r'), axis=0)
-
+        data = np.concatenate([np.load("data/" + c + ".npy", mmap_mode='r') for c in classes])
         data = data.reshape((-1, 1, 28, 28))
         data = torch.from_numpy(data).float()
-        data[:] = (data[:] - 128) / 128
         self.data = data
+        del data
 
     def __len__(self):
-        return self.data.shape[0]
+        return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx], 0
+        return (self.data[idx] - 128) / 128, 0
 
     def download(self, classes):
         urls = []
