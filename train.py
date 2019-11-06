@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
 import random
+import os
 
 from models.mnist_model import Generator, Discriminator, DHead, QHead
 from dataloader import get_data
@@ -221,7 +222,7 @@ for epoch in range(params['num_epochs']):
     img_list.append(vutils.make_grid(gen_data, nrow=10, padding=2, normalize=True))
 
     # Generate image to check performance of generator.
-    if((epoch+1) == 1 or (epoch+1) == params['num_epochs']/2):
+    if((epoch+1) == 1 or (epoch+1) % 3 == 0):
         with torch.no_grad():
             gen_data = netG(fixed_noise).detach().cpu()
         plt.figure(figsize=(10, 10))
@@ -232,6 +233,10 @@ for epoch in range(params['num_epochs']):
 
     # Save network weights.
     if (epoch+1) % params['save_epoch'] == 0:
+        try:
+            os.mkdir("checkpoint")
+        except FileExistsError:
+            pass
         torch.save({
             'netG' : netG.state_dict(),
             'discriminator' : discriminator.state_dict(),
