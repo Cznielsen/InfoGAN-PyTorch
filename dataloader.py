@@ -57,6 +57,7 @@ def get_data(dataset, batch_size, classes=None):
     # Create dataloader.
     dataloader = torch.utils.data.DataLoader(dataset, 
                                             batch_size=batch_size, 
-                                            shuffle=True)
+                                            shuffle=True,
+                                            pin_memory=True)
 
     return dataloader
