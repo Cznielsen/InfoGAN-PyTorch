@@ -5,13 +5,14 @@ import requests
 import numpy as np
 import torch
 
+from config import params
 
 class QuickDrawDataset(Dataset):
     def __init__(self, classes, download=False):
         if download:
             self.download(classes)
 
-        data = np.concatenate([np.load("data/" + c + ".npy", mmap_mode='r') for c in classes])
+        data = np.concatenate([np.load("data/" + c + ".npy", mmap_mode='r')[: params["num_img"]] for c in classes])
         data = data.reshape((-1, 1, 28, 28))
         data = torch.from_numpy(data).float()
         self.data = data
