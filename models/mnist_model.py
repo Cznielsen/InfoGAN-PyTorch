@@ -43,9 +43,9 @@ class Discriminator(nn.Module):
         self.bn3 = nn.BatchNorm2d(1024)
 
     def forward(self, x):
-        x = F.leaky_relu(self.conv1(x), 0.1, inplace=True)
-        x = F.leaky_relu(self.bn2(self.conv2(x)), 0.1, inplace=True)
-        x = F.leaky_relu(self.bn3(self.conv3(x)), 0.1, inplace=True)
+        x = F.leaky_relu(self.conv1(x), 0.2, inplace=True)
+        x = F.leaky_relu(self.bn2(self.conv2(x)), 0.2, inplace=True)
+        x = F.leaky_relu(self.bn3(self.conv3(x)), 0.2, inplace=True)
 
         return x
 
@@ -72,7 +72,7 @@ class QHead(nn.Module):
         self.conv_var = nn.Conv2d(128, 2, 1)
 
     def forward(self, x):
-        x = F.leaky_relu(self.bn1(self.conv1(x)), 0.1, inplace=True)
+        x = F.leaky_relu(self.bn1(self.conv1(x)), 0.2, inplace=True)
 
         disc_logits = self.conv_disc(x).squeeze()
 
