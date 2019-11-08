@@ -11,11 +11,13 @@ args = parser.parse_args()
 
 from models.mnist_model import Generator
 
-# Load the checkpoint file
-state_dict = torch.load(args.load_path)
-
 # Set the device to run on: GPU or CPU.
 device = torch.device("cuda:0" if(torch.cuda.is_available()) else "cpu")
+
+# Load the checkpoint file
+state_dict = torch.load(args.load_path, map_location=device)
+
+
 # Get the 'params' dictionary from the loaded state_dict.
 params = state_dict['params']
 
