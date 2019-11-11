@@ -146,8 +146,8 @@ iters = 0
 
 for epoch in range(params['num_epochs']):
     epoch_start_time = time.time()
-    schedulerG.step()
-    schedulerD.step()
+    #schedulerG.step()
+    #schedulerD.step()
     print(f"Learning rate: {get_lr()}")
     
 
