@@ -2,7 +2,8 @@
 params = {
     'batch_size': 128,# Batch size.
     'num_epochs': 100,# Number of epochs to train for.
-    'learning_rate': 2e-5,# Learning rate.
+    'learning_rate_G': 1e-3, # Learning rate for Generator.
+    'learning_rate_D': 2e-4,
     'beta1': 0.5,
     'beta2': 0.999,
     'save_epoch' : 25,# After how many epochs to save checkpoints and generate test output.

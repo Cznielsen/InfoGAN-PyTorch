@@ -104,8 +104,12 @@ criterionQ_dis = nn.CrossEntropyLoss()
 criterionQ_con = NormalNLLLoss()
 
 # Adam optimiser is used.
-optimD = optim.Adam([{'params': discriminator.parameters()}, {'params': netD.parameters()}], lr=params['learning_rate'], betas=(params['beta1'], params['beta2']))
-optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()}], lr=params['learning_rate'], betas=(params['beta1'], params['beta2']))
+optimD = optim.Adam([{'params': discriminator.parameters()}, {'params': netD.parameters()}], lr=params['learning_rate_D'], betas=(params['beta1'], params['beta2']))
+optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()}], lr=params['learning_rate_G'], betas=(params['beta1'], params['beta2']))
+
+# Added scheduler to decay learning rate
+schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=5, gamma=0.2)
+schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=5, gamma=0.2)
 
 # Fixed Noise
 z = torch.randn(100, params['num_z'], 1, 1, device=device)
@@ -142,6 +146,8 @@ iters = 0
 
 for epoch in range(params['num_epochs']):
     epoch_start_time = time.time()
+    schedulerG.step()
+    schedulerD.step()
 
     for i, (data, _) in enumerate(dataloader, 0):
         # Get batch size
@@ -244,7 +250,8 @@ for epoch in range(params['num_epochs']):
             'netQ' : netQ.state_dict(),
             'optimD' : optimD.state_dict(),
             'optimG' : optimG.state_dict(),
-            'params' : params
+            'params' : params,
+            'schedulerG' : schedulerG
             }, 'checkpoint/model_epoch_%d_{}'.format(params['dataset']) %(epoch+1))
 
 training_time = time.time() - start_time
