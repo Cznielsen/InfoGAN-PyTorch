@@ -148,6 +148,8 @@ for epoch in range(params['num_epochs']):
     epoch_start_time = time.time()
     schedulerG.step()
     schedulerD.step()
+    print(f"Learning rate: {get_lr()}")
+    
 
     for i, (data, _) in enumerate(dataloader, 0):
         # Get batch size
@@ -251,7 +253,8 @@ for epoch in range(params['num_epochs']):
             'optimD' : optimD.state_dict(),
             'optimG' : optimG.state_dict(),
             'params' : params,
-            'schedulerG' : schedulerG
+            'schedulerG' : schedulerG,
+            'schedulerD' : schedulerD
             }, 'checkpoint/model_epoch_%d_{}'.format(params['dataset']) %(epoch+1))
 
 training_time = time.time() - start_time
@@ -296,3 +299,7 @@ ims = [[plt.imshow(np.transpose(i,(1,2,0)), animated=True)] for i in img_list]
 anim = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
 anim.save('infoGAN_{}.gif'.format(params['dataset']), dpi=80, writer='imagemagick')
 plt.show()
+
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
