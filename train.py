@@ -9,7 +9,6 @@ import time
 import random
 import os
 
-from models.mnist_model import Generator, Discriminator, DHead, QHead
 from dataloader import get_data
 from utils import *
 from config import params
@@ -23,7 +22,7 @@ elif(params['dataset'] == 'CelebA'):
 elif(params['dataset'] == 'FashionMNIST'):
     from models.mnist_model import Generator, Discriminator, DHead, QHead
 elif(params['dataset'] == 'QuickDraw'):
-    from models.mnist_model import Generator, Discriminator, DHead, QHead
+    from models.qd_model import Generator, Discriminator, DHead, QHead
 
 # Set random seed for reproducibility.
 seed = 1123
