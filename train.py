@@ -24,6 +24,10 @@ elif(params['dataset'] == 'FashionMNIST'):
 elif(params['dataset'] == 'QuickDraw'):
     from models.qd_model import Generator, Discriminator, DHead, QHead
 
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
 # Set random seed for reproducibility.
 seed = 1123
 random.seed(seed)
@@ -64,9 +68,9 @@ elif(params['dataset'] == 'FashionMNIST'):
     params['num_con_c'] = 2
 # Input parametre til vores. Vi skal lege med disse på et tidspunkt
 elif(params['dataset'] == 'QuickDraw'):
-    params['num_z'] = 62
+    params['num_z'] = 70
     params['num_dis_c'] = 1
-    params['dis_c_dim'] = 10 #Denne værdi skal ændres til antallet af klasser vi skal skelne i mellem. Passér fra config
+    params['dis_c_dim'] = 2 #Denne værdi skal ændres til antallet af klasser vi skal skelne i mellem. Passér fra config
     params['num_con_c'] = 2 #Hyperparameter. Beskriver antallet af kontiuerte værdier vi kan lege med. Burde passeres fra konfig i stedet.
 
 # Plot the training images.
@@ -74,7 +78,8 @@ sample_batch = next(iter(dataloader))
 plt.figure(figsize=(10, 10))
 plt.axis("off")
 plt.imshow(np.transpose(vutils.make_grid(
-    sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).cpu(), (1, 2, 0)))
+    #sample_batch[0].to(device)[ : 100], nrow=10, padding=2, normalize=True).cpu(), (1, 2, 0)))
+    sample_batch[0].to(device)[ : len(params['classes'])*10], nrow=10, padding=2, normalize=True).cpu(), (1, 2, 0)))
 plt.savefig('Training Images {}'.format(params['dataset']))
 plt.close('all')
 
@@ -111,7 +116,8 @@ schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=5, gamma=0.2)
 schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=5, gamma=0.2)
 
 # Fixed Noise
-z = torch.randn(100, params['num_z'], 1, 1, device=device)
+"""
+z = torch.randn(100, params['num_z'], 1, 1, device=device)params['dis_c_dim']
 fixed_noise = z
 if(params['num_dis_c'] != 0):
     idx = np.arange(params['dis_c_dim']).repeat(10)
@@ -126,9 +132,27 @@ if(params['num_dis_c'] != 0):
 if(params['num_con_c'] != 0):
     con_c = torch.rand(100, params['num_con_c'], 1, 1, device=device) * 2 - 1
     fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
+"""
+z = torch.randn(len(params['classes'])*10, params['num_z'], 1, 1, device=device)
+fixed_noise = z
+if(params['num_dis_c'] != 0):
+    idx = np.arange(params['dis_c_dim']).repeat(10)
+    dis_c = torch.zeros(len(params['classes'])*10, params['num_dis_c'], params['dis_c_dim'], device=device)
+    for i in range(params['num_dis_c']):
+        dis_c[torch.arange(0, len(params['classes'])*10), i, idx] = 1.0
 
-real_label = 1
-fake_label = 0
+    dis_c = dis_c.view(len(params['classes'])*10, -1, 1, 1)
+
+    fixed_noise = torch.cat((fixed_noise, dis_c), dim=1)
+
+if(params['num_con_c'] != 0):
+    con_c = torch.rand(len(params['classes'])*10, params['num_con_c'], 1, 1, device=device) * 2 - 1
+    fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
+
+real_label_upper = 1
+real_label_lower = 0.9
+fake_label_upper = 0.1
+fake_label_lower = 0
 
 # List variables to store results pf training.
 img_list = []
@@ -144,11 +168,7 @@ start_time = time.time()
 iters = 0
 
 for epoch in range(params['num_epochs']):
-    epoch_start_time = time.time()
-    #schedulerG.step()
-    #schedulerD.step()
-    #print(f"Learning rate: {get_lr()}")
-    
+    epoch_start_time = time.time()    
 
     for i, (data, _) in enumerate(dataloader, 0):
         # Get batch size
@@ -159,20 +179,24 @@ for epoch in range(params['num_epochs']):
         # Updating discriminator and DHead
         optimD.zero_grad()
         # Real data
-        label = torch.full((b_size, ), real_label, device=device)
+        #label = torch.full((b_size, ), real_label, device=device)
+        #label = torch.normal(mean=real_label, std=real_label, size=(b_size, ), device=device)
+        label_real = real_label_lower + torch.rand(size=(b_size, ), device=device) * (real_label_upper - real_label_lower)
         output1 = discriminator(real_data)
         probs_real = netD(output1).view(-1)
-        loss_real = criterionD(probs_real, label)
+        loss_real = criterionD(probs_real, label_real)
         # Calculate gradients.
         loss_real.backward()
 
         # Fake data
-        label.fill_(fake_label)
+        #label.fill_(fake_label)
+        #label = torch.normal(mean=fake_label, std=fake_label, size=(b_size, ), device=device)
+        label_fake = fake_label_lower + torch.rand(size=(b_size, ), device=device) * (fake_label_upper - fake_label_lower)
         noise, idx = noise_sample(params['num_dis_c'], params['dis_c_dim'], params['num_con_c'], params['num_z'], b_size, device)
         fake_data = netG(noise)
         output2 = discriminator(fake_data.detach())
         probs_fake = netD(output2).view(-1)
-        loss_fake = criterionD(probs_fake, label)
+        loss_fake = criterionD(probs_fake, label_fake)
         # Calculate gradients.
         loss_fake.backward()
 
@@ -186,16 +210,16 @@ for epoch in range(params['num_epochs']):
 
         # Fake data treated as real.
         output = discriminator(fake_data)
-        label.fill_(real_label)
+        #label.fill_(real_label)
         probs_fake = netD(output).view(-1)
-        gen_loss = criterionD(probs_fake, label)
+        gen_loss = criterionD(probs_fake, label_real)
 
         q_logits, q_mu, q_var = netQ(output)
         target = torch.LongTensor(idx).to(device)
         # Calculating loss for discrete latent code.
         dis_loss = 0
         for j in range(params['num_dis_c']):
-            dis_loss += criterionQ_dis(q_logits[:, j*10 : j*10 + 10], target[j])
+            dis_loss += criterionQ_dis(q_logits[:, j*params['dis_c_dim'] : j*params['dis_c_dim'] + params['dis_c_dim']], target[j])
 
         # Calculating loss for continuous latent code.
         con_loss = 0
@@ -220,6 +244,9 @@ for epoch in range(params['num_epochs']):
         D_losses.append(D_loss.item())
 
         iters += 1
+    
+    schedulerG.step()
+    schedulerD.step()
 
     epoch_time = time.time() - epoch_start_time
     print("Time taken for Epoch %d: %.2fs" %(epoch + 1, epoch_time))
@@ -298,7 +325,3 @@ ims = [[plt.imshow(np.transpose(i,(1,2,0)), animated=True)] for i in img_list]
 anim = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
 anim.save('infoGAN_{}.gif'.format(params['dataset']), dpi=80, writer='imagemagick')
 plt.show()
-
-def get_lr(optimizer):
-    for param_group in optimizer.param_groups:
-        return param_group['lr']

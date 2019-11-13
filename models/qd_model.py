@@ -5,13 +5,19 @@ import torch.nn.functional as F
 """
 Architecture based on InfoGAN paper.
 """
-
+#Placeholder for now
+num_z = 70
+#self.num_dis_c = 1
+dis_c_dim = 2
+num_con_c = 2
 class Generator(nn.Module):
+
+
     def __init__(self):
         super().__init__()
 
         #self.tconv1 = nn.ConvTranspose2d(74, 1024, 1, 1, bias=False)
-        self.fc1 = nn.Linear(74, 1024)
+        self.fc1 = nn.Linear(num_z+dis_c_dim+num_con_c, 1024)
         self.bn1 = nn.BatchNorm1d(1024)
 
         #self.tconv2 = nn.ConvTranspose2d(1024, 128, 7, 1, bias=False)
@@ -24,7 +30,7 @@ class Generator(nn.Module):
         self.tconv2 = nn.ConvTranspose2d(64, 1, 4, 2, padding=1, bias=False)
 
     def forward(self, x):
-        x = x.view(-1, 74)
+        x = x.view(-1, num_z+dis_c_dim+num_con_c)
         x = F.relu(self.bn1(self.fc1(x)))
 
         x = self.fc2(x)
@@ -74,16 +80,22 @@ class QHead(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(1024, 128, 1, bias=False)
-        self.bn1 = nn.BatchNorm2d(128)
+        #self.conv1 = nn.Conv2d(1024, 128, 1, bias=False)
+        self.fc1 = nn.Linear(1024, 128)
+        self.bn1 = nn.BatchNorm1d(128)
 
+        """
         self.conv_disc = nn.Conv2d(128, 10, 1)
         self.conv_mu = nn.Conv2d(128, 2, 1)
         self.conv_var = nn.Conv2d(128, 2, 1)
+        """
+        self.conv_disc = nn.Linear(128, dis_c_dim)
+        self.conv_mu = nn.Linear(128, num_con_c)
+        self.conv_var = nn.Linear(128, num_con_c)
 
     def forward(self, x):
-        x = x.view(-1, 1024, 1, 1)
-        x = F.leaky_relu(self.bn1(self.conv1(x)), 0.1, inplace=True)
+        x = x.view(-1, 1024)
+        x = F.leaky_relu(self.bn1(self.fc1(x)), 0.1, inplace=True)
 
         disc_logits = self.conv_disc(x).squeeze()
 

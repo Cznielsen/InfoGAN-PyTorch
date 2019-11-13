@@ -8,6 +8,7 @@ params = {
     'beta2': 0.999,
     'save_epoch' : 5,# After how many epochs to save checkpoints and generate test output.
     'dataset' : 'QuickDraw',
-    'classes' : ["mushroom", "door", "hand", "key", "t-shirt", "smiley face", "candle", "eye", "star", "pants"],
+    #'classes' : ["mushroom", "door", "hand", "key", "t-shirt", "smiley face", "candle", "eye", "star", "pants"],
+    'classes' : ["smiley face", "hand"],
     'num_img' : 8000 # Set to -1 for all
 }# Dataset to use. Choose from {MNIST, SVHN, CelebA, FashionMNIST}. CASE MUST MATCH EXACTLY!!!!!
