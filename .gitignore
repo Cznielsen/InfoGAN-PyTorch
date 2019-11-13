@@ -224,3 +224,6 @@ pip-selfcheck.json
 #!.vscode/extensions.json
 
 # End of https://www.gitignore.io/api/venv,python,virtualenv,pycharm+all
+
+#USER FOLDERS
+checkpoint/
