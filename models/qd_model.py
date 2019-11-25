@@ -1,15 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from config import params
 
 """
 Architecture based on InfoGAN paper.
 """
 #Placeholder for now
-num_z = 70
+num_z = params['num_z']
 #self.num_dis_c = 1
-dis_c_dim = 2
-num_con_c = 2
+dis_c_dim = params['dis_c_dim']
+num_con_c = params['num_con_c']
 class Generator(nn.Module):
 
 

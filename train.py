@@ -40,6 +40,7 @@ print(device, " will be used.\n")
 
 dataloader = get_data(params['dataset'], params['batch_size'], classes=params["classes"])
 
+"""
 # Set appropriate hyperparameters depending on the dataset used.
 # The values given in the InfoGAN paper are used.
 # num_z : dimension of incompressible noise.
@@ -66,12 +67,13 @@ elif(params['dataset'] == 'FashionMNIST'):
     params['num_dis_c'] = 1
     params['dis_c_dim'] = 10
     params['num_con_c'] = 2
-# Input parametre til vores. Vi skal lege med disse på et tidspunkt
+# Input parametre til vores. Vi skal lege med disse på et tidspunkt. skal vist summere op til 74?
 elif(params['dataset'] == 'QuickDraw'):
     params['num_z'] = 70
     params['num_dis_c'] = 1
     params['dis_c_dim'] = 2 #Denne værdi skal ændres til antallet af klasser vi skal skelne i mellem. Passér fra config
     params['num_con_c'] = 2 #Hyperparameter. Beskriver antallet af kontiuerte værdier vi kan lege med. Burde passeres fra konfig i stedet.
+"""
 
 # Plot the training images.
 sample_batch = next(iter(dataloader))
