@@ -33,6 +33,7 @@ class Generator(nn.Module):
 
         self.tconv2 = nn.Conv2d(64, 1, 4, 1, padding=2, bias=False)
 
+
     def forward(self, x):
         x = x.view(-1, num_z+dis_c_dim+num_con_c)
         x = F.relu(self.bn1(self.fc1(x)))
@@ -47,8 +48,10 @@ class Generator(nn.Module):
         x = self.bn3(x)
         x = F.relu(x)
         #x = F.relu(self.bn3(self.tconv1(x)))
-
+        #print(x.shape)
         img = torch.tanh(self.tconv2(x))
+        #print(img.shape)
+
 
         return img
 
