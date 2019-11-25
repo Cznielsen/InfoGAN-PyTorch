@@ -10,7 +10,7 @@ params = {
     'dataset' : 'QuickDraw',
     #'classes' : ["mushroom", "door", "hand", "key", "t-shirt", "smiley face", "candle", "eye", "star", "pants"],
     'classes' : ["smiley face", "hand", "cake"],
-    'num_img' : -1 # Set to -1 for all
+    'num_img' : 4000 # Set to -1 for all
 }# Dataset to use. Choose from {MNIST, SVHN, CelebA, FashionMNIST}. CASE MUST MATCH EXACTLY!!!!!
 
 # Set appropriate hyperparameters depending on the dataset used.

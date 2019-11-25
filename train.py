@@ -79,8 +79,8 @@ optimD = optim.Adam([{'params': discriminator.parameters()}, {'params': netD.par
 optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()}], lr=params['learning_rate_G'], betas=(params['beta1'], params['beta2']))
 
 # Added scheduler to decay learning rate
-schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=5, gamma=0.2)
-schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=5, gamma=0.2)
+schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=2, gamma=0.5)
+schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=2, gamma=0.5)
 
 z = torch.randn(len(params['classes'])*10, params['num_z'], 1, 1, device=device)
 fixed_noise = z
@@ -99,10 +99,10 @@ if(params['num_con_c'] != 0):
     fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
 
 #Label smoothing
-real_label_upper = 0.1
-real_label_lower = 0
-fake_label_upper = 1
-fake_label_lower = 0.9
+real_label_upper = 1.0
+real_label_lower = 0.9
+fake_label_upper = 0.1
+fake_label_lower = 0
 
 real_label = 1
 fake_label = 0

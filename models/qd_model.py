@@ -31,7 +31,7 @@ class Generator(nn.Module):
         self.tconv1 = nn.ConvTranspose2d(128, 64, 4, 2, padding=1, bias=False)
         self.bn3 = nn.BatchNorm2d(64)
 
-        self.tconv2 = nn.ConvTranspose2d(64, 1, 4, 1, padding=1, bias=False)
+        self.tconv2 = nn.ConvTranspose2d(64, 1, 4, 1, padding=2, bias=False)
 
     def forward(self, x):
         x = x.view(-1, num_z+dis_c_dim+num_con_c)
