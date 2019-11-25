@@ -6,11 +6,11 @@ params = {
     'learning_rate_D': 2e-4,
     'beta1': 0.5,
     'beta2': 0.999,
-    'save_epoch' : 5,# After how many epochs to save checkpoints and generate test output.
+    'save_epoch' : 3,# After how many epochs to save checkpoints and generate test output.
     'dataset' : 'QuickDraw',
     #'classes' : ["mushroom", "door", "hand", "key", "t-shirt", "smiley face", "candle", "eye", "star", "pants"],
-    'classes' : ["smiley face", "hand", "cake"],
-    'num_img' : 4000 # Set to -1 for all
+    'classes' : ['light bulb', 'leaf', 'zigzag', 'sailboat', 'saw', 'donut', 'grapes', 'hourglass', 'washing machine', 'mountain'],
+    'num_img' : 12000 # Set to -1 for all
 }# Dataset to use. Choose from {MNIST, SVHN, CelebA, FashionMNIST}. CASE MUST MATCH EXACTLY!!!!!
 
 # Set appropriate hyperparameters depending on the dataset used.
