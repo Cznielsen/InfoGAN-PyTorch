@@ -41,7 +41,7 @@ c3 = torch.cat((zeros, c), dim=1)
 
 idx = np.arange(10).repeat(10)
 dis_c = torch.zeros(100, 10, 1, 1, device=device)
-dis_c[torch.arange(0, 100), idx] = 3.0
+dis_c[torch.arange(0, 100), idx] = 1.0
 # Discrete latent code.
 c1 = dis_c.view(100, -1, 1, 1)
 

@@ -40,41 +40,6 @@ print(device, " will be used.\n")
 
 dataloader = get_data(params['dataset'], params['batch_size'], classes=params["classes"])
 
-"""
-# Set appropriate hyperparameters depending on the dataset used.
-# The values given in the InfoGAN paper are used.
-# num_z : dimension of incompressible noise.
-# num_dis_c : number of discrete latent code used.
-# dis_c_dim : dimension of discrete latent code.
-# num_con_c : number of continuous latent code used.
-if(params['dataset'] == 'MNIST'):
-    params['num_z'] = 62
-    params['num_dis_c'] = 1
-    params['dis_c_dim'] = 10
-    params['num_con_c'] = 2
-elif(params['dataset'] == 'SVHN'):
-    params['num_z'] = 124
-    params['num_dis_c'] = 4
-    params['dis_c_dim'] = 10
-    params['num_con_c'] = 4
-elif(params['dataset'] == 'CelebA'):
-    params['num_z'] = 128
-    params['num_dis_c'] = 10
-    params['dis_c_dim'] = 10
-    params['num_con_c'] = 0
-elif(params['dataset'] == 'FashionMNIST'):
-    params['num_z'] = 62
-    params['num_dis_c'] = 1
-    params['dis_c_dim'] = 10
-    params['num_con_c'] = 2
-# Input parametre til vores. Vi skal lege med disse på et tidspunkt. skal vist summere op til 74?
-elif(params['dataset'] == 'QuickDraw'):
-    params['num_z'] = 70
-    params['num_dis_c'] = 1
-    params['dis_c_dim'] = 2 #Denne værdi skal ændres til antallet af klasser vi skal skelne i mellem. Passér fra config
-    params['num_con_c'] = 2 #Hyperparameter. Beskriver antallet af kontiuerte værdier vi kan lege med. Burde passeres fra konfig i stedet.
-"""
-
 # Plot the training images.
 sample_batch = next(iter(dataloader))
 plt.figure(figsize=(10, 10))
@@ -117,24 +82,6 @@ optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()
 schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=5, gamma=0.2)
 schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=5, gamma=0.2)
 
-# Fixed Noise
-"""
-z = torch.randn(100, params['num_z'], 1, 1, device=device)params['dis_c_dim']
-fixed_noise = z
-if(params['num_dis_c'] != 0):
-    idx = np.arange(params['dis_c_dim']).repeat(10)
-    dis_c = torch.zeros(100, params['num_dis_c'], params['dis_c_dim'], device=device)
-    for i in range(params['num_dis_c']):
-        dis_c[torch.arange(0, 100), i, idx] = 1.0
-
-    dis_c = dis_c.view(100, -1, 1, 1)
-
-    fixed_noise = torch.cat((fixed_noise, dis_c), dim=1)
-
-if(params['num_con_c'] != 0):
-    con_c = torch.rand(100, params['num_con_c'], 1, 1, device=device) * 2 - 1
-    fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
-"""
 z = torch.randn(len(params['classes'])*10, params['num_z'], 1, 1, device=device)
 fixed_noise = z
 if(params['num_dis_c'] != 0):
@@ -151,10 +98,14 @@ if(params['num_con_c'] != 0):
     con_c = torch.rand(len(params['classes'])*10, params['num_con_c'], 1, 1, device=device) * 2 - 1
     fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
 
-real_label_upper = 1
-real_label_lower = 0.9
-fake_label_upper = 0.1
-fake_label_lower = 0
+#Label smoothing
+real_label_upper = 0.1
+real_label_lower = 0
+fake_label_upper = 1
+fake_label_lower = 0.9
+
+real_label = 1
+fake_label = 0
 
 # List variables to store results pf training.
 img_list = []
@@ -180,25 +131,33 @@ for epoch in range(params['num_epochs']):
 
         # Updating discriminator and DHead
         optimD.zero_grad()
+        
         # Real data
-        #label = torch.full((b_size, ), real_label, device=device)
-        #label = torch.normal(mean=real_label, std=real_label, size=(b_size, ), device=device)
-        label_real = real_label_lower + torch.rand(size=(b_size, ), device=device) * (real_label_upper - real_label_lower)
+        label = torch.full((b_size, ), real_label, device=device)
+        #label_real = real_label_lower + torch.rand(size=(b_size, ), device=device) * (real_label_upper - real_label_lower) #label smoothing
+
         output1 = discriminator(real_data)
         probs_real = netD(output1).view(-1)
-        loss_real = criterionD(probs_real, label_real)
+
+        #loss_real = criterionD(probs_real, label_real)
+        loss_real = criterionD(probs_real, label)
+
         # Calculate gradients.
         loss_real.backward()
 
         # Fake data
-        #label.fill_(fake_label)
-        #label = torch.normal(mean=fake_label, std=fake_label, size=(b_size, ), device=device)
-        label_fake = fake_label_lower + torch.rand(size=(b_size, ), device=device) * (fake_label_upper - fake_label_lower)
+        #label = torch.full((b_size, ), fake_label, device=device)
+        label.fill_(fake_label)
+        #label_fake = fake_label_lower + torch.rand(size=(b_size, ), device=device) * (fake_label_upper - fake_label_lower) #Label smoothing
+
         noise, idx = noise_sample(params['num_dis_c'], params['dis_c_dim'], params['num_con_c'], params['num_z'], b_size, device)
         fake_data = netG(noise)
         output2 = discriminator(fake_data.detach())
         probs_fake = netD(output2).view(-1)
-        loss_fake = criterionD(probs_fake, label_fake)
+
+        loss_fake = criterionD(probs_fake, label)
+        #loss_fake = criterionD(probs_fake, label_fake)
+
         # Calculate gradients.
         loss_fake.backward()
 
@@ -212,9 +171,13 @@ for epoch in range(params['num_epochs']):
 
         # Fake data treated as real.
         output = discriminator(fake_data)
-        #label.fill_(real_label)
+
+        label.fill_(real_label) #remove line if label smoothing
+
         probs_fake = netD(output).view(-1)
-        gen_loss = criterionD(probs_fake, label_real)
+
+        gen_loss = criterionD(probs_fake, label)
+        #gen_loss = criterionD(probs_fake, label_real)
 
         q_logits, q_mu, q_var = netQ(output)
         target = torch.LongTensor(idx).to(device)
