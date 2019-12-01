@@ -47,7 +47,7 @@ class QuickDrawDataset(Dataset):
             folder = 'temp/'
 
         for c in classes:
-            if not os.path.exists(os.path.join("data", c + ext)):
+            if not os.path.exists(os.path.join(folder, c + ext)):
                 urls.append(url + requests.utils.quote(c) + ext)
 
         rs = (grequests.get(u, allow_redirects=True) for u in urls)
@@ -60,7 +60,8 @@ class QuickDrawDataset(Dataset):
             for r, d, files in os.walk('temp/'):
                 for f in files:
                     images = []
-                    for res in convert.unpack_drawings('temp/'+f):
-                        if res['recognized']:
-                            images.append(res['image'])
-                    np.save('data/' + str(f).split('.')[0], convert.vector_to_raster(images))
+                    if not os.path.exists(os.path.join('data/', f + str(f).split('.')[0] + '.npy')):
+                        for res in convert.unpack_drawings('temp/'+f):
+                            if res['recognized']:
+                                images.append(res['image'])
+                        np.save('data/' + str(f).split('.')[0], convert.vector_to_raster(images))
