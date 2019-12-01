@@ -60,7 +60,7 @@ class QuickDrawDataset(Dataset):
             for r, d, files in os.walk('temp/'):
                 for f in files:
                     images = []
-                    if not os.path.exists(os.path.join('data/', f + str(f).split('.')[0] + '.npy')):
+                    if not os.path.exists(os.path.join('data/', str(f).split('.')[0] + '.npy')):
                         for res in convert.unpack_drawings('temp/'+f):
                             if res['recognized']:
                                 images.append(res['image'])
