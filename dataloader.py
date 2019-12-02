@@ -52,7 +52,7 @@ def get_data(dataset, batch_size, classes=None):
 
 
     elif dataset == "QuickDraw":
-        dataset = QuickDrawDataset(classes, download=True)
+        dataset = QuickDrawDataset(classes, download=True, from_src=True)
 
     # Create dataloader.
     dataloader = torch.utils.data.DataLoader(dataset, 
