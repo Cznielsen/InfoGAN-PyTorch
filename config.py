@@ -3,13 +3,12 @@ params = {
     'batch_size': 128,# Batch size.
     'num_epochs': 30,# Number of epochs to train for.
     'learning_rate_G': 1e-3, # Learning rate for Generator.
-    'learning_rate_D': 2e-4,
+    'learning_rate_D': 1e-4,
     'beta1': 0.5,
     'beta2': 0.999,
     'save_epoch' : 3,# After how many epochs to save checkpoints and generate test output.
     'dataset' : 'QuickDraw',
-    #'classes' : ["mushroom", "door", "hand", "key", "t-shirt", "smiley face", "candle", "eye", "star", "pants"],
-    'classes' : ['light bulb', 'leaf', 'penguin', 'sailboat', 'car', 'donut', 'star', 'hourglass', 'washing machine', 'mountain'],
+    'classes' : ['t-shirt', 'pants', 'car', 'washing machine', 'cake', 'sword', 'sailboat', 'candle', 'cup', 'mountain'],
     'num_img' : 12000 # Set to -1 for all
 }# Dataset to use. Choose from {MNIST, SVHN, CelebA, FashionMNIST}. CASE MUST MATCH EXACTLY!!!!!
 
