@@ -79,8 +79,8 @@ optimD = optim.Adam([{'params': discriminator.parameters()}, {'params': netD.par
 optimG = optim.Adam([{'params': netG.parameters()}, {'params': netQ.parameters()}], lr=params['learning_rate_G'], betas=(params['beta1'], params['beta2']))
 
 # Added scheduler to decay learning rate
-schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=2, gamma=0.5)
-schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=2, gamma=0.5)
+schedulerG = optim.lr_scheduler.StepLR(optimizer=optimG, step_size=5, gamma=0.2)
+schedulerD = optim.lr_scheduler.StepLR(optimizer=optimD, step_size=5, gamma=0.2)
 
 z = torch.randn(len(params['classes'])*10, params['num_z'], 1, 1, device=device)
 fixed_noise = z
@@ -99,9 +99,9 @@ if(params['num_con_c'] != 0):
     fixed_noise = torch.cat((fixed_noise, con_c), dim=1)
 
 #Label smoothing
-real_label_upper = 1.0
-real_label_lower = 0.9
-fake_label_upper = 0.1
+real_label_upper = 1
+real_label_lower = 1
+fake_label_upper = 0
 fake_label_lower = 0
 
 real_label = 1
@@ -133,30 +133,30 @@ for epoch in range(params['num_epochs']):
         optimD.zero_grad()
         
         # Real data
-        label = torch.full((b_size, ), real_label, device=device)
-        #label_real = real_label_lower + torch.rand(size=(b_size, ), device=device) * (real_label_upper - real_label_lower) #label smoothing
+        #label = torch.full((b_size, ), real_label, device=device)
+        label_real = real_label_lower + torch.rand(size=(b_size, ), device=device) * (real_label_upper - real_label_lower) #label smoothing
 
         output1 = discriminator(real_data)
         probs_real = netD(output1).view(-1)
 
-        #loss_real = criterionD(probs_real, label_real)
-        loss_real = criterionD(probs_real, label)
+        loss_real = criterionD(probs_real, label_real)
+        #loss_real = criterionD(probs_real, label)
 
         # Calculate gradients.
         loss_real.backward()
 
         # Fake data
         #label = torch.full((b_size, ), fake_label, device=device)
-        label.fill_(fake_label)
-        #label_fake = fake_label_lower + torch.rand(size=(b_size, ), device=device) * (fake_label_upper - fake_label_lower) #Label smoothing
+        #label.fill_(fake_label)
+        label_fake = fake_label_lower + torch.rand(size=(b_size, ), device=device) * (fake_label_upper - fake_label_lower) #Label smoothing
 
         noise, idx = noise_sample(params['num_dis_c'], params['dis_c_dim'], params['num_con_c'], params['num_z'], b_size, device)
         fake_data = netG(noise)
         output2 = discriminator(fake_data.detach())
         probs_fake = netD(output2).view(-1)
 
-        loss_fake = criterionD(probs_fake, label)
-        #loss_fake = criterionD(probs_fake, label_fake)
+        #loss_fake = criterionD(probs_fake, label)
+        loss_fake = criterionD(probs_fake, label_fake)
 
         # Calculate gradients.
         loss_fake.backward()
@@ -172,12 +172,12 @@ for epoch in range(params['num_epochs']):
         # Fake data treated as real.
         output = discriminator(fake_data)
 
-        label.fill_(real_label) #remove line if label smoothing
+        #label.fill_(real_label) #remove line if label smoothing <<<<----------------------------------
 
         probs_fake = netD(output).view(-1)
 
-        gen_loss = criterionD(probs_fake, label)
-        #gen_loss = criterionD(probs_fake, label_real)
+        #gen_loss = criterionD(probs_fake, label)
+        gen_loss = criterionD(probs_fake, label_real)
 
         q_logits, q_mu, q_var = netQ(output)
         target = torch.LongTensor(idx).to(device)
